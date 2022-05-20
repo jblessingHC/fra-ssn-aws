@@ -3,10 +3,19 @@ Secure Service Networking for AWS w/ HashiCorp Consul
 
 ## Table of Contents
 
+- [Architecture Overview](#Architecture%20Overview) 
 - [Build Environment](#Build%20Environment) 
 - [Obtain AWS credentials](#Obtain%20AWS%20credentials) 
 - [Obtain HCP credentials](#Obtain%20HCP%20credentials) 
 - [Troubleshooting](#Troubleshooting)
+
+---
+
+# Architecture Overview
+
+Using AWS and HCP Credentials, you can create this architecture from a single `terraform apply` command (approx 35 mins build time).
+
+![Secure Service Networking for AWS Architecture Overview](DOCS/DIAGS/Architecture_Overview.jpg)
 
 ---
 # Build Environment
