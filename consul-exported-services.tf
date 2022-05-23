@@ -1,26 +1,3 @@
-// Create Admin Partition and Namespace for the client
-resource "consul_admin_partition" "ecs-dev" {
-  name        = "ecs-dev"
-  description = "Partition for ecs service"
-}
-
-resource "consul_admin_partition" "eks-dev" {
-  name        = "eks-dev"
-  description = "Partition for ecs service"
-}
-
-
-resource "consul_config_entry" "proxy_defaults" {
-
-  kind = "proxy-defaults"
-  name = "global"
-
-  config_json = jsonencode({
-    MeshGateway = {
-      Mode = "local"
-    }
-  })
-}
 
 resource "consul_config_entry" "exported_eks_services" {
   kind = "exported-services"
@@ -52,4 +29,5 @@ resource "consul_config_entry" "exported_eks_services" {
       }
     ]
   })
+  depends_on = [ hcp_consul_cluster.hcp_consul ]
 }

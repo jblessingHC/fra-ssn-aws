@@ -15,6 +15,10 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = ">= 1.11.3"
     }
+    consul = {
+      source = "hashicorp/consul"
+      version = "2.15.1"
+    }
   }
   provider_meta "hcp" {
     module_name = "hcp-consul"
@@ -28,8 +32,8 @@ provider "aws" {
 
 // Configure the providers
 
-#provider "hcp" {
-#  client_id     = var.hcp_client_id
-#  client_secret = var.hcp_client_secret
-#}
-
+provider "consul" {
+  address    = hcp_consul_cluster.hcp_consul.consul_public_endpoint_url
+  datacenter = hcp_consul_cluster.hcp_consul.datacenter
+  token      = hcp_consul_cluster_root_token.token.secret_id
+}
