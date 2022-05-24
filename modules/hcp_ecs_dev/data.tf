@@ -5,10 +5,6 @@ data "aws_availability_zones" "available" {
   }
 }
 
-data "aws_caller_identity" "this" {}
-
-data "aws_caller_identity" "current" {}
-
 data "aws_security_group" "vpc_default" {
   name   = "default"
   vpc_id = var.ecs_dev_vpc_id
