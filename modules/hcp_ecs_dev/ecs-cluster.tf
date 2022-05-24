@@ -13,7 +13,7 @@ resource "aws_ecs_cluster" "this" {
   name               = var.name
 }
 
-resource "aws_ecs_cluster_capacity_providers" "example" {
+resource "aws_ecs_cluster_capacity_providers" "ecs_dev" {
   cluster_name = aws_ecs_cluster.this.name
 
   capacity_providers = ["FARGATE"]

@@ -82,10 +82,60 @@ module.hcp_eks["eks-prod"].module.eks.aws_eks_cluster.this[0]: Still creating...
   }
 ```
 
+## Cluster destroy issues
+
+**Problem/Symptom:**
+
+```sh
+module.hcp_vpc_eks_dev.module.vpc.aws_subnet.public[0]: Still destroying... [id=subnet-05827d8a4e0b2aa91, 17m20s elapsed]
+module.hcp_vpc_eks_prod.module.vpc.aws_subnet.public[1]: Still destroying... [id=subnet-0a606e0c5bcf36c8d, 15m50s elapsed]
+module.hcp_vpc_eks_dev.module.vpc.aws_subnet.public[0]: Still destroying... [id=subnet-05827d8a4e0b2aa91, 17m30s elapsed]
+module.hcp_vpc_eks_dev.module.vpc.aws_subnet.public[1]: Still destroying... [id=subnet-0452b4e4fb3b49391, 17m30s elapsed]
+module.hcp_vpc_eks_dev.module.vpc.aws_subnet.public[2]: Still destroying... [id=subnet-037e38f24b72f0e48, 17m30s elapsed]
+```
+
+**Solution:**
+
+In the AWS Console, delete the Interfaces left behond by EKS:
+https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#NIC:
+
+
+## Terraform destroy fails - subnet
+
+`terraform destroy` keeps getting stuck unable to remove a public subnet. The subnet is attched to an `interface` that cannot be deleted. The `interface` is left behing by the kube node.
+
+```sh
+module.hcp_vpc_eks_prod.module.vpc.aws_subnet.public[0]: Still destroying... [id=subnet-0b05c7c2c68a96468, 20m1s elapsed]
+╷
+│ Error: error deleting EC2 Subnet (subnet-0b05c7c2c68a96468): DependencyViolation: The subnet 'subnet-0b05c7c2c68a96468' has dependencies and cannot be deleted.
+│       status code: 400, request id: e9be65dd-d918-4f7b-b47e-5c535f337fa8
+```
+
+Helm Chart 0.42.0 does this fairly consistently, but problem doesn't occur with Helm Chart 0.41.0
+
+
+## Error Reading Secrets Manager
+
+Error:
+
+```sh
+module.hcp_eks_dev.module.demo_app.data.kubernetes_service.ingress: Reading...
+module.hcp_eks_dev.module.demo_app.data.kubernetes_service.ingress: Read complete after 0s [id=default/consul-eks-dev-ingress-gateway]
+╷
+│ Error: error reading Secrets Manager Secret (arn:aws:secretsmanager:us-west-2:047538519499:secret:gossip-key-paynuD): ResourceNotFoundException: Secrets Manager can't find the specified secret.
+│ 
+│   with module.hcp_ecs_dev.aws_secretsmanager_secret.gossip_key,
+│   on modules/hcp_ecs_dev/secrets-manager.tf line 11, in resource "aws_secretsmanager_secret" "gossip_key":
+│   11: resource "aws_secretsmanager_secret" "gossip_key" {
+```
+
+Solution: Re-run `terraform`
+
 ## Helm Chart install fails
 
 1. Don't use Consul Helm Chart 0.43.0 unless you ALSO want to upgrade to consul 1.12.0
-2. So use Consul Helm Chart 0.42.0 with Consul 1.11.5 instead.
+2. Helm Chart 0.42.0 seems to leave behind kube node parts (see subnet issue above)
+3. Use Consul Helm Chart 0.41.0 with Consul 1.11.5 instead.
 
 The terraform provider for helm, and its `helm_release` resource, provide very little usable output when things go wrong, e.g.:
 

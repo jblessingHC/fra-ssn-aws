@@ -4,7 +4,7 @@ module "eks" {
 
   cluster_name             = var.cluster_name
   cluster_version          = "1.21"
-  subnets               = var.public_subnets
+  subnets                  = var.public_subnets
   vpc_id                   = var.vpc_id
   wait_for_cluster_timeout = 900
 

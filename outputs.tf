@@ -1,3 +1,12 @@
+output "hcp_consul_public_endpoint_url" {
+  value = "${hcp_consul_cluster.hcp_consul.consul_public_endpoint_url}"
+}
+
+output "hcp_acl_token_secret_id" {
+  value = hcp_consul_cluster_root_token.token.secret_id
+  sensitive = true
+}
+
 output "eks_prod_kubeconfig_filename" {
   value = abspath(module.hcp_eks_prod.kubeconfig_filename)
 }

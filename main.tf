@@ -150,6 +150,8 @@ module "hcp_eks_dev" {
 module "hcp_ecs_dev" {
   source = "./modules/hcp_ecs_dev"
 
+  env_name                = var.env-ecs-dev.name
+
   # VPC Settings
   ecs_dev_vpc_id          = module.hcp_vpc_ecs_dev.vpc_id
   ecs_dev_vpc_cidr_block  = module.hcp_vpc_ecs_dev.vpc_cidr_block

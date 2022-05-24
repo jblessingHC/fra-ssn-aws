@@ -48,6 +48,12 @@ terraform plan
 terraform apply
 ```
 
+Approximately 25 - 30 minutes later you will receive the three HashiCups URLs for the three environments: EKS prod, EKS Dev, and ECS Dev.
+
+To access the HCP Consul UI, first fetch the ACL token so that you can login using the following command:
+
+`terraform output hcp_acl_token_secret_id`
+
 ---
 # Obtain AWS credentials
 
