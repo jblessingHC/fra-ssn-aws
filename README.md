@@ -87,6 +87,26 @@ First navigate to the *HCP Consul* tab - this will open a new window.
 ---
 # Troubleshooting
 
+Tested with the following versions:
+
+```sh
+Terraform v1.1.9
+on darwin_amd64
++ provider registry.terraform.io/gavinbunney/kubectl v1.14.0
++ provider registry.terraform.io/hashicorp/aws v3.75.1
++ provider registry.terraform.io/hashicorp/cloudinit v2.2.0
++ provider registry.terraform.io/hashicorp/consul v2.15.1
++ provider registry.terraform.io/hashicorp/hcp v0.26.0
++ provider registry.terraform.io/hashicorp/helm v2.5.1
++ provider registry.terraform.io/hashicorp/http v2.1.0
++ provider registry.terraform.io/hashicorp/kubernetes v2.11.0
++ provider registry.terraform.io/hashicorp/local v2.2.2
++ provider registry.terraform.io/hashicorp/random v3.1.3
++ provider registry.terraform.io/hashicorp/template v2.2.0
++ provider registry.terraform.io/hashicorp/tls v3.3.0
++ provider registry.terraform.io/terraform-aws-modules/http v2.4.1
+```
+
 Troubleshooting steps have been moved to the `./DOCS` folder:
 [TROUBLESHOOTING.md](./DOCS/TROUBLESHOOTING.md)
 

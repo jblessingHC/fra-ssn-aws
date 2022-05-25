@@ -2,11 +2,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.43"
+      version = "3.75.1"
     }
     hcp = {
       source  = "hashicorp/hcp"
-      version = ">= 0.18.0"
+      version = "0.26.0"
     }
     consul = {
       source = "hashicorp/consul"
