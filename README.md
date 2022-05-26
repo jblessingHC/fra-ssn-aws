@@ -54,35 +54,6 @@ To access the HCP Consul UI, first fetch the ACL token so that you can login usi
 
 `terraform output hcp_acl_token_secret_id`
 
----
-# Obtain AWS credentials
-
-In this section well cover creating/retrieving your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY values
-
-Scroll down to Programmatic Access in the following document:
-
-https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html
-
----
-# Obtain HCP credentials
-
-Obtaining your HCP_CLIENT_ID and  HCP_CLIENT_SECRET
-
-First navigate to the *HCP Consul* tab - this will open a new window.
-
-1. Click the 'Sign Up' button.
-
-2. In the left panel, navigate to "Access control (IAM)"
-
-3. Scroll down to "Service Principals"
-
-4. Click "Create service principal".
-
-5. Give the service principal a name, e.g. 'aws-workshop'
-
-6. Leave the Role as 'Contributor' and click 'Save'
-
-7. Copy the 'Client ID' and the 'Client Secret' somewhere locally as you will need them soon.
 
 ---
 # Troubleshooting
