@@ -10,8 +10,8 @@ module "vpc" {
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
 
-  enable_nat_gateway      = true
-  single_nat_gateway      = true
+  enable_nat_gateway      = true  #//TODO: testing private subnets and gateways (no gateways failed)
+  single_nat_gateway      = true  #//TODO: testing private subnets and gateways (no gateways failed)
   enable_dns_hostnames    = true
   
   tags = var.tags

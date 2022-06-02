@@ -111,6 +111,7 @@ module "hcp_eks_prod" {
   env_name           = var.env-eks-prod.name
   cluster_name       = "${hcp_consul_cluster.hcp_consul.cluster_id}-${var.env-eks-prod.name}"
   public_subnets     = module.hcp_vpc_eks_prod.public_subnets
+  private_subnets    = module.hcp_vpc_eks_prod.private_subnets
   vpc_id             = module.hcp_vpc_eks_prod.vpc_id
   consul_datacenter  = hcp_consul_cluster.hcp_consul.datacenter
   consul_ca_file     = hcp_consul_cluster.hcp_consul.consul_ca_file
@@ -131,6 +132,7 @@ module "hcp_eks_dev" {
   env_name           = var.env-eks-dev.name
   cluster_name       = "${hcp_consul_cluster.hcp_consul.cluster_id}-${var.env-eks-dev.name}"
   public_subnets     = module.hcp_vpc_eks_dev.public_subnets
+  private_subnets    = module.hcp_vpc_eks_dev.private_subnets
   vpc_id             = module.hcp_vpc_eks_dev.vpc_id
   consul_datacenter  = hcp_consul_cluster.hcp_consul.datacenter
   consul_ca_file     = hcp_consul_cluster.hcp_consul.consul_ca_file

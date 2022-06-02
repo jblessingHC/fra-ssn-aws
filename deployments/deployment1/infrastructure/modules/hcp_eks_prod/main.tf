@@ -5,9 +5,9 @@ module "eks" {
   cluster_name             = var.cluster_name
   cluster_version          = "1.21"
   subnets                  = var.public_subnets
+#  subnets                  = var.private_subnets  ##
   vpc_id                   = var.vpc_id
   wait_for_cluster_timeout = 900
-
   node_groups = {
     application = {
       name_prefix      = "hashicups"
@@ -37,10 +37,4 @@ module "eks_consul_client" {
   # created at the same time. This forces the client to wait until
   # the node group is successfully created.
   depends_on = [module.eks]
-}
-
-module "demo_app" {
-  source  = "./modules/k8s-demo-app"
-
-  depends_on = [module.eks_consul_client]
 }

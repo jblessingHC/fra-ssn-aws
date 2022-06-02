@@ -11,10 +11,6 @@ terraform {
       source  = "hashicorp/hcp"
       version = "0.26.0"
     }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "1.14.0"
-    }
     consul = {
       source = "hashicorp/consul"
       version = "2.15.1"
