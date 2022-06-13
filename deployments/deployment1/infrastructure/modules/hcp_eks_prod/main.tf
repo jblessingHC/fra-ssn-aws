@@ -1,20 +1,31 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "17.24.0"
+#  version = "18.23.0"
 
   cluster_name             = var.cluster_name
   cluster_version          = "1.21"
   subnets                  = var.public_subnets
-#  subnets                  = var.private_subnets  ##
+#  subnet_ids                  = var.public_subnets
+#  subnets                  = var.private_subnets
   vpc_id                   = var.vpc_id
   wait_for_cluster_timeout = 900
+#  cluster_timeouts = {
+#    create = "20m"
+#    delete = "20m"
+#  }
+
   node_groups = {
+#  eks_managed_node_groups = {
     application = {
       name_prefix      = "hashicups"
       instance_types   = ["t3a.medium"]
       desired_capacity = 3
       max_capacity     = 3
       min_capacity     = 3
+#      min_size     = 3
+#      max_size     = 3
+#      desired_size = 3
     }
   }
 }

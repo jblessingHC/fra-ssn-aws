@@ -5,12 +5,11 @@ module "eks" {
   cluster_name             = var.cluster_name
   cluster_version          = "1.21"
   subnets                  = var.public_subnets
-#  subnets                  = var.private_subnets
   vpc_id                   = var.vpc_id
   wait_for_cluster_timeout = 900
 
   node_groups = {
-    application = {
+      application = {
       name_prefix      = "hashicups"
       instance_types   = ["t3a.medium"]
       desired_capacity = 3

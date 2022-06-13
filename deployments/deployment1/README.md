@@ -22,33 +22,133 @@ terraform apply
 
 NOTE: To avoid name clashes, each deployment has a unique identifier. In this example, that unique ID is `y1g14o`, which you will see in the commands below. YOUR UNIQUE ID WILL BE DIFFERENT!
 
-Once the `terraform apply` has successfully complete it share output including, among other things, two `kubeconfig` files which contain information for executing `kubectl` commands. Copy the `dev` and `prod` config files to their respective `services/` directories, like so:
+Once the `terraform apply` has successfully complete it shares output including, among other things, two `kubeconfig` files which contain information for executing `kubectl` commands which look something like:
 
 ```sh
-cp kubeconfig_hcp-consul-y1g14o-eks-dev ../services/k8s-dev-app
-cp kubeconfig_hcp-consul-y1g14o-eks-prod ../services/k8s-prod-app
+kubeconfig_hcp-consul-y1g14o-eks-dev
+kubeconfig_hcp-consul-y1g14o-eks-prod
 ```
+
+---
 
 ## Deploying Services onto the EKS Prod environment
 
-Lets get the production version of our demonstration app up and running:
+Verify communications with the k8s API:
 
+```sh
+export KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod
+kubectl get nodes
+kubectl get pods
+kubectl get services
+```
+
+### Install Consul
+Installing Consul on the 'EKS Prod' cluster:
+
+```sh
+helm install consul hashicorp/consul --values consul_helm_chart_eks-prod.yaml --version 0.44.0 --debug --timeout 10m0s
+```
+
+### Verify Consul Install
+
+```sh
+kubectl get pods
+kubectl get services
+```
+Everything should eventually reach the `Running` STATUS.
+
+**NOTE:** You may see several pods in the `PodInitializing` STATUS. This is fine, keep running the `kubectl get pods` command.
+
+**NOTE:** If you run into any issues, take a look at the Field Reference Architecture for Secure Service Networking on AWS [Wiki page for helm chart installs](https://github.com/hashicorp/fra-ssn-aws/wiki/Troubleshooting-EKS)
+
+### Deploy Prod HashiCups
+
+```sh
+kubectl apply -f ../services/k8s-prod-app/manifests/
+```
+
+### Verify HashiCups Install
+
+Assuming there was no install errors, you can now interact with the HashiCups application. `kubectl get pods` should now reveal something resembling:
+
+```sh
+NAME                                                    READY   STATUS    RESTARTS   AGE
+consul-eks-prod-client-czvbk                            1/1     Running   0          7m10s
+consul-eks-prod-client-mntx9                            1/1     Running   0          7m10s
+consul-eks-prod-client-zdlsj                            1/1     Running   0          7m10s
+consul-eks-prod-connect-injector-56f87d7fdb-8w875       1/1     Running   0          7m10s
+consul-eks-prod-connect-injector-56f87d7fdb-z7qcn       1/1     Running   0          7m10s
+consul-eks-prod-controller-7d49877ddf-ds2b6             1/1     Running   0          7m10s
+consul-eks-prod-ingress-gateway-564c7784dc-nbl9q        2/2     Running   0          7m10s
+consul-eks-prod-ingress-gateway-564c7784dc-p6gxf        2/2     Running   0          7m10s
+consul-eks-prod-webhook-cert-manager-69f4746cbf-mckl4   1/1     Running   0          7m10s
+frontend-d6c448596-7mnkc                                2/2     Running   0          105s
+payments-67c89b9bc9-kg7c2                               2/2     Running   0          104s
+postgres-8479965456-dlkv6                               2/2     Running   0          103s
+product-api-dcf898744-bxjn2                             2/2     Running   0          102s
+public-api-7f67d79fb6-jkf9z                             2/2     Running   0          102s
+```
+
+The output of `kubectl get services` should look like:
+
+```sh
+NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)          AGE
+consul-eks-prod-connect-injector     ClusterIP      172.20.215.131   <none>                                                                   443/TCP          6m51s
+consul-eks-prod-controller-webhook   ClusterIP      172.20.141.65    <none>                                                                   443/TCP          6m51s
+consul-eks-prod-dns                  ClusterIP      172.20.37.198    <none>                                                                   53/TCP,53/UDP    6m51s
+consul-eks-prod-ingress-gateway      LoadBalancer   172.20.244.60    a7feccea756b54156a9e4d1dfa08c0db-786022078.us-west-2.elb.amazonaws.com   8080:32550/TCP   6m51s
+frontend                             ClusterIP      172.20.13.177    <none>                                                                   80/TCP           87s
+kubernetes                           ClusterIP      172.20.0.1       <none>                                                                   443/TCP          26m
+payments                             ClusterIP      172.20.17.38     <none>                                                                   8080/TCP         85s
+postgres                             ClusterIP      172.20.2.116     <none>                                                                   5432/TCP         85s
+product-api                          ClusterIP      172.20.141.202   <none>                                                                   9090/TCP         84s
+public-api                           ClusterIP      172.20.9.153     <none>                                                                   8080/TCP         83s
+```
+
+Pay particular attention to the `consul-eks-prod-ingress-gateway` service, and its `EXTERNAL-IP` and `PORT`
+
+You should now be able to access HashiCups via:
+`a7feccea756b54156a9e4d1dfa08c0db-786022078.us-west-2.elb.amazonaws.com:8080`
+
+
+For a close inspection at service configurations you can use the `describe` commandm like so: `kubectl describe service consul-eks-prod-ingress-gateway`
+
+If there were issues you would see them in the `Events:`.
+
+---
 
 ## Deploying Services onto the EKS Dev environment
 
-Lets get the development version of our demonstration app up and running:
+Lets get the development version of our demonstration app up and running. First:
 
 ```sh
-cd ../services/k8s-dev-app
 export KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-dev
 kubectl get nodes
 kubectl get pods
 kubectl get services
 ```
 
-With comminication tested/established we are now ready to deploy:
+### Install Consul
+
 ```sh
-kubectl apply -f manifests/
+helm install consul hashicorp/consul --values consul_helm_chart_eks-dev.yaml --version 0.44.0 --debug --timeout 10m0s
+```
+
+### Verify Consul
+
+The output of both `get services` and `get pods` should be very similar to the previoud **EKS Prod** deployment, however, with the addition of 'Consul Mesh Gateways', which will be used for communications with the ECS Cluster.
+
+```sh
+kubectl get pods 
+kubectl get services 
+```
+
+### Install HashiCups
+
+With comminication tested/established we are now ready to deploy:
+
+```sh
+kubectl apply -f ../services/k8s-dev-app/manifests/
 ```
 
 When its finished, take a look at what's happened with the following commands:
@@ -59,14 +159,27 @@ kubectl describe pods consul-eks-dev-client-db7pv
 kubectl get services
 kubectl describe services consul-eks-dev-ingress-gateway
 ```
+NOTE: You should now be able to use the `LoadBalancer Ingress:` address to reach the HashiCups application. 
+
+NOTE: If the `Port` is anything other than `80` you will need to append it to the `LoadBalancer Ingress:` address.
 
 If you want to programmatically fetch the Ingress Gateway's external hostname:
 ```sh
 kubectl get services consul-eks-dev-ingress-gateway --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-## Uninstalling the deployed service
+## Communicating with multiple k8s clusters
 
+Siwtching back and forth can be tedious. Try creating a kubectl alias for each cluster, e.g. after creating these two aliases:
+
+```sh
+alias kdev='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-dev kubectl'
+alias kprod='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod kubectl'
+```
+
+I can now use `kprod get services` and `kdev get services` instead.
+
+## Uninstalling the deployed service
 
 `kubectl delete -f manifests/`
 
