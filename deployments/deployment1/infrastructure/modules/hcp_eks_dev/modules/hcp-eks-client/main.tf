@@ -1,7 +1,6 @@
 resource "kubernetes_secret" "consul_secrets" {
   metadata {
     name = "${var.cluster_id}-hcp"
-#    namespace = "consul"
   }
 
   data = {
