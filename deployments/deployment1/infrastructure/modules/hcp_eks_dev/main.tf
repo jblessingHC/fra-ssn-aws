@@ -19,22 +19,30 @@ module "eks" {
   }
 }
 
-module "eks_consul_client" {
-  source  = "./modules/hcp-eks-client"
+resource "kubernetes_secret" "consul_secrets" {
+  metadata {
+    name = "${var.hcp_cluster_id}-hcp"
+  }
 
-  env_name         = var.env_name
-  cluster_id       = var.hcp_cluster_id
-  consul_hosts     = jsondecode(base64decode(var.consul_config_file))["retry_join"]
-  k8s_api_endpoint = module.eks.cluster_endpoint
-  consul_version   = var.consul_version
+  data = {
+    caCert              = base64decode(var.consul_ca_file)
+    gossipEncryptionKey = jsondecode(base64decode(var.consul_config_file))["encrypt"]
+    bootstrapToken      = var.boostrap_acl_token
+  }
 
-  boostrap_acl_token    = var.boostrap_acl_token
-  consul_ca_file        = base64decode(var.consul_ca_file)
-  consul_datacenter     = var.consul_datacenter
-  gossip_encryption_key = jsondecode(base64decode(var.consul_config_file))["encrypt"]
+  type = "Opaque"
 
-  # The EKS node group will fail to create if the clients are
-  # created at the same time. This forces the client to wait until
-  # the node group is successfully created.
   depends_on = [module.eks]
+}
+
+resource "local_sensitive_file" "consul_helm_chart" {
+  content = templatefile("${path.module}/templates/consul.tpl", {
+    env_name           = var.env_name
+    consul_datacenter  = var.consul_datacenter
+    consul_hosts       = jsonencode(jsondecode(base64decode(var.consul_config_file))["retry_join"])
+    cluster_id         = var.hcp_cluster_id
+    k8s_api_endpoint   = module.eks.cluster_endpoint
+    consul_version     = substr(var.consul_version, 1, -1)    })
+  filename          = "./consul_helm_chart_${var.env_name}.yaml"
+  depends_on = [kubernetes_secret.consul_secrets]
 }
