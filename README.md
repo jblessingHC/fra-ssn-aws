@@ -1,30 +1,30 @@
-# secure-service-networking-for-aws
+# Secure Service Networking for AWS
 Secure Service Networking for AWS w/ HashiCorp Consul
 
 ## Table of Contents
 
 - [Architecture Overview](#Architecture%20Overview) 
 - [Build Environment](#Build%20Environment) 
-- [Obtain AWS credentials](#Obtain%20AWS%20credentials) 
-- [Obtain HCP credentials](#Obtain%20HCP%20credentials) 
-- [Troubleshooting](#Troubleshooting)
+- [Deployment Patterns](#Deployment%20Patterns) 
+- [Documentation and Troubleshooting](#Documentation%20and%20Troubleshooting)
 
 ---
 
 # Architecture Overview
 
-Using AWS and HCP Credentials, you can create this architecture from a single `terraform apply` command (approx 35 mins build time).
+Using AWS and HCP Credentials, you can create the architecture deployments contained within this repository. Each deployment is a variation of the Secure Service Networking for AWS Field Reference Architecture depicted in the diagram below.
 
-![Secure Service Networking for AWS Architecture Overview](DOCS/DIAGS/Architecture_Overview.jpg)
+![Secure Service Networking for AWS Architecture Overview](_docs/diags/Architecture_Overview.jpg)
+
+Architecture details, documentation, and troubleshooting guidance for each deployment pattern can be found in the FRA-SSN-AWS [Wiki](https://github.com/hashicorp/fra-ssn-aws/wiki).
 
 ---
-# Build Environment
 
-Executing this terraform definition will recreate the environment from the "Secure Service Networking for AWS" Instruqt workshop:
-https://play.instruqt.com/hashicorp/tracks/secure-service-networking-for-aws
+# Build Requirements
 
+Each deployment pattern in the Secure Service Networking for AWS Field Reference Architecture the [HashiCorp Cloud Platform (HCP)](https://cloud.hashicorp.com/) and hence require both AWS credentials and HCP credentials. 
 
-To run this you will need to set the following environment variables:
+To successfully run any of the deployments you will need to set the following environment variables:
 
 ```sh
 AWS_ACCESS_KEY_ID
@@ -33,52 +33,44 @@ HCP_CLIENT_ID
 HCP_CLIENT_SECRET
 ```
 
-For example:
-```sh
-export HCP_CLIENT_ID=XxXx1xx47X5x4xxXxxXXXx0Xxx8xxxXX
-export HCP_CLIENT_SECRET=Xxxx16xX2XXxXXxXxxx2xxxXxXXXxxxxXX0XxxXx_Xx4x09XxxXxxxxxxxxxxx9X
-export AWS_ACCESS_KEY_ID=XXXXXXXXXXXX6XXXXXX
-export AWS_SECRET_ACCESS_KEY=Xx7XX9XxXXXXxxxXXx/xXXXXxx7xXXXxXXXxXXxX
-```
+For details on acquiring HCP credentials, and testing both AWS and HCP authentication using terraform, please visit the [Authentication Credentials](https://github.com/hashicorp/fra-ssn-aws/wiki/Authentication-Credentials) page of the Wiki.
 
-Then:
-```sh
-terraform init
-terraform plan
-terraform apply
-```
-
-Approximately 25 - 30 minutes later you will receive the three HashiCups URLs for the three environments: EKS prod, EKS Dev, and ECS Dev.
-
-To access the HCP Consul UI, first fetch the ACL token so that you can login using the following command:
-
-`terraform output hcp_acl_token_secret_id`
-
+Each deployment pattern has its own README.md containing deploment specific details.
 
 ---
-# Troubleshooting
 
-Tested with the following versions:
+# Deployment Patterns
 
-```sh
-Terraform v1.1.9
-on darwin_amd64
-+ provider registry.terraform.io/gavinbunney/kubectl v1.14.0
-+ provider registry.terraform.io/hashicorp/aws v3.75.1
-+ provider registry.terraform.io/hashicorp/cloudinit v2.2.0
-+ provider registry.terraform.io/hashicorp/consul v2.15.1
-+ provider registry.terraform.io/hashicorp/hcp v0.26.0
-+ provider registry.terraform.io/hashicorp/helm v2.5.1
-+ provider registry.terraform.io/hashicorp/http v2.1.0
-+ provider registry.terraform.io/hashicorp/kubernetes v2.11.0
-+ provider registry.terraform.io/hashicorp/local v2.2.2
-+ provider registry.terraform.io/hashicorp/random v3.1.3
-+ provider registry.terraform.io/hashicorp/template v2.2.0
-+ provider registry.terraform.io/hashicorp/tls v3.3.0
-+ provider registry.terraform.io/terraform-aws-modules/http v2.4.1
-```
+Variations of the Field Reference Architecture for Secure Service Networking on AWS (FRA-SSN-AWS) cam be found in the `deployments/` directory.
 
-Troubleshooting steps have been moved to the `./DOCS` folder:
-[TROUBLESHOOTING.md](./DOCS/TROUBLESHOOTING.md)
+## Deployment 1
+
+Architecture:
+
+* 1x HCP Consul cluster
+* 3x VPCs
+* 2x EKS clusters (1x Prod, 1x Dev)
+* 1x ECS cluster
+
+Description:
+
+* A single microservice application runs in the EKS Prod envronment.
+* A single microservice application runs in the EKS Dev envronment, a newer version.
+* Instances of the Frontend and public API microservices run in the ECS Dev environment, leveraging the backend services in EKS Prod, via cross-platform secure service networking.
+
+## Deployment 2 (Coming Soon)
+
+Architecture
+
+* 1x HCP Consul cluster
+* 2x k8s cluster
+
+Description:
+ * A microservice application will be distributed across the two k8s clusters demonstrating cross k8s cluster security under a single control-plane.
 
 ---
+
+# Documentation and Troubleshooting
+
+Documentation and Troubleshooting guidance can be found in the FRA-SSN-AWS Wiki:
+https://github.com/hashicorp/fra-ssn-aws/wiki
