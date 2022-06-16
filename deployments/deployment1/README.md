@@ -143,6 +143,17 @@ kubectl get pods
 kubectl get services 
 ```
 
+Verify you can remote execute commands within the container:
+
+```sh
+kubectl exec consul-eks-prod-client-5tkb9 -- uname -a
+```
+
+Verify that the consul agent is loaded and responding:
+```sh
+kubectl exec consul-eks-prod-client-5tkb9 -- consul members
+```
+
 ### Install HashiCups
 
 With comminication tested/established we are now ready to deploy:
@@ -178,6 +189,12 @@ alias kprod='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod kubectl'
 ```
 
 I can now use `kprod get services` and `kdev get services` instead.
+
+Same goes for helm:
+```sh
+alias hdev='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-dev helm'
+alias hprod='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod helm'
+```
 
 ## Uninstalling the deployed service
 
