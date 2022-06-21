@@ -1,15 +1,16 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "17.24.0"
+  version = "17.20.0"
 
   cluster_name             = var.cluster_name
-  cluster_version          = "1.21"
+  cluster_version          = "1.20"
   subnets                  = var.public_subnets
   vpc_id                   = var.vpc_id
-  wait_for_cluster_timeout = 900
+  write_kubeconfig         = false
+#  wait_for_cluster_timeout = 900
 
   node_groups = {
-      application = {
+    application = {
       name_prefix      = "hashicups"
       instance_types   = ["t3a.medium"]
       desired_capacity = 3
@@ -45,4 +46,17 @@ resource "local_sensitive_file" "consul_helm_chart" {
     consul_version     = substr(var.consul_version, 1, -1)    })
   filename          = "./consul_helm_chart_${var.env_name}.yaml"
   depends_on = [kubernetes_secret.consul_secrets]
+}
+
+resource "local_sensitive_file" "kube_config_dev" {
+  content = templatefile("${path.module}/templates/kubeconfig.tpl", {
+    kubeconfig_name                   = data.aws_eks_cluster.cluster.name
+    endpoint                          = data.aws_eks_cluster.cluster.endpoint
+    cluster_auth_base64               = data.aws_eks_cluster.cluster.certificate_authority[0].data
+    aws_authenticator_command         = "aws-iam-authenticator"
+    aws_authenticator_command_args    = ["token", "-i", data.aws_eks_cluster.cluster.name]
+    aws_authenticator_additional_args = []
+    aws_authenticator_env_variables   = {}
+  })
+  filename          = "./kube_config_dev"
 }

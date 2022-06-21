@@ -14,19 +14,29 @@ Before deploying apps/services we must build the infrastructure upon which they 
 NOTE: 20 - 25 mins build time
 
 ```sh
-cd DEPLOYMENTS/deloyment1/infrastructure
+cd deloyment/deloyment1/infrastructure
 terraform init
 terraform plan
 terraform apply
 ```
 
-NOTE: To avoid name clashes, each deployment has a unique identifier. In this example, that unique ID is `y1g14o`, which you will see in the commands below. YOUR UNIQUE ID WILL BE DIFFERENT!
+NOTE: To avoid name clashes, each deployment has a unique deloyment identifier. In this example, that unique ID is `y1g14o`, which you will see in the commands below. YOUR UNIQUE ID WILL BE DIFFERENT!
 
 Once the `terraform apply` has successfully complete it shares output including, among other things, two `kubeconfig` files which contain information for executing `kubectl` commands which look something like:
 
 ```sh
 kubeconfig_hcp-consul-y1g14o-eks-dev
 kubeconfig_hcp-consul-y1g14o-eks-prod
+```
+
+NOTE: to simplify switchign between envrironments, use shell alias for each environment:
+
+```sh
+export UDID=`terraform output unique_deployment_id` 
+alias kprod="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-prod kubectl"
+alias kdev="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-dev kubectl"
+alias hdev="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-dev helm"
+alias hprod="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-prod helm"
 ```
 
 ---
@@ -36,35 +46,36 @@ kubeconfig_hcp-consul-y1g14o-eks-prod
 Verify communications with the k8s API:
 
 ```sh
-export KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod
-kubectl get nodes
-kubectl get pods
-kubectl get services
+kprod get nodes
+kprod get pods
+kprod get services
 ```
 
 ### Install Consul
 Installing Consul on the 'EKS Prod' cluster:
 
 ```sh
-helm install consul hashicorp/consul --values consul_helm_chart_eks-prod.yaml --version 0.44.0 --debug --timeout 10m0s
+hprod install consul hashicorp/consul --values consul_helm_chart_eks-prod.yaml --version 0.44.0
 ```
+
+NOTE: To troubleshoot, append `--debug --timeout 10m0s`
 
 ### Verify Consul Install
 
 ```sh
-kubectl get pods
-kubectl get services
+kprod get pods
+kprod get services
 ```
 Everything should eventually reach the `Running` STATUS.
 
-**NOTE:** You may see several pods in the `PodInitializing` STATUS. This is fine, keep running the `kubectl get pods` command.
+**NOTE:** You may see several pods in the `PodInitializing` STATUS. This is fine, keep running the `kprod get pods` command.
 
 **NOTE:** If you run into any issues, take a look at the Field Reference Architecture for Secure Service Networking on AWS [Wiki page for helm chart installs](https://github.com/hashicorp/fra-ssn-aws/wiki/Troubleshooting-EKS)
 
 ### Deploy Prod HashiCups
 
 ```sh
-kubectl apply -f ../services/k8s-prod-app/manifests/
+kprod apply -f ../services/k8s-prod-app/manifests/
 ```
 
 ### Verify HashiCups Install
@@ -89,7 +100,7 @@ product-api-dcf898744-bxjn2                             2/2     Running   0     
 public-api-7f67d79fb6-jkf9z                             2/2     Running   0          102s
 ```
 
-The output of `kubectl get services` should look like:
+The output of `kprod get services` should look like:
 
 ```sh
 NAME                                 TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)          AGE
@@ -111,7 +122,7 @@ You should now be able to access HashiCups via:
 `a7feccea756b54156a9e4d1dfa08c0db-786022078.us-west-2.elb.amazonaws.com:8080`
 
 
-For a close inspection at service configurations you can use the `describe` commandm like so: `kubectl describe service consul-eks-prod-ingress-gateway`
+For a close inspection at service configurations you can use the `describe` commandm like so: `kprod describe service consul-eks-prod-ingress-gateway`
 
 If there were issues you would see them in the `Events:`.
 
