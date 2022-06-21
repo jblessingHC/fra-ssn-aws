@@ -15,6 +15,11 @@ output "eks_dev_cluster_id" {
   value = module.hcp_eks_dev.eks_dev_cluster_id
 }
 
+output "unique_deployment_id" {
+  value = random_string.rand_suffix.result
+}
+
+
 #output "ecs_dev_hashicups_url" {
 #  value = module.hcp_ecs_dev.client_lb_address
 #}
