@@ -7,7 +7,6 @@ module "eks" {
   subnets                  = var.public_subnets
   vpc_id                   = var.vpc_id
   write_kubeconfig         = false
-#  wait_for_cluster_timeout = 900
 
   node_groups = {
     application = {
