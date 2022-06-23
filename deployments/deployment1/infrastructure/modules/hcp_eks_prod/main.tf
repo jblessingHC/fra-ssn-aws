@@ -3,7 +3,7 @@ module "eks" {
   version = "17.20.0"
 
   cluster_name             = var.cluster_name
-  cluster_version          = "1.22"
+  cluster_version          = "1.21"
   subnets                  = var.public_subnets
   vpc_id                   = var.vpc_id
   write_kubeconfig         = false
