@@ -3,11 +3,10 @@ module "eks" {
   version = "17.20.0"
 
   cluster_name             = var.cluster_name
-  cluster_version          = "1.21"
+  cluster_version          = "1.22"   # https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html
   subnets                  = var.public_subnets
   vpc_id                   = var.vpc_id
   write_kubeconfig         = false
-#  wait_for_cluster_timeout = 900
 
   node_groups = {
     application = {
@@ -44,7 +43,7 @@ resource "local_sensitive_file" "consul_helm_chart" {
     cluster_id         = var.hcp_cluster_id
     k8s_api_endpoint   = module.eks.cluster_endpoint
     consul_version     = substr(var.consul_version, 1, -1)    })
-  filename          = "./consul_helm_chart_${var.env_name}.yaml"
+  filename          = "../configs/consul_helm_chart_${var.env_name}.yaml"
   depends_on = [kubernetes_secret.consul_secrets]
 }
 
@@ -58,5 +57,5 @@ resource "local_sensitive_file" "kube_config_dev" {
     aws_authenticator_additional_args = []
     aws_authenticator_env_variables   = {}
   })
-  filename          = "./kube_config_dev"
+  filename          = "../configs/kubeconfig_dev"
 }
