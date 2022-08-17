@@ -22,6 +22,8 @@ global:
   gossipEncryption:
     secretName: ${cluster_id}-hcp
     secretKey: gossipEncryptionKey
+#  metrics:
+#    enabled: true
 
 externalServers:
   enabled: true
@@ -44,6 +46,8 @@ connectInject:
     defaultEnabled: true
   enabled: true
   default: true
+#  metrics:
+#    defaultEnableMerging: true
 
 controller:
   enabled: true
@@ -55,7 +59,7 @@ ingressGateways:
       service:
         type: LoadBalancer
         ports:
-        - port: 8080
+        - port: 80
 
 dns:
   enabled: true
