@@ -2,7 +2,7 @@ global:
   enabled: false
   name: consul-${env_name}
   datacenter: ${consul_datacenter}
-  image: "hashicorp/consul-enterprise:1.11.6-ent"
+  image: "hashicorp/consul-enterprise:1.11.8-ent"
   imageEnvoy: "envoyproxy/envoy-alpine:v1.20.2"
   enableConsulNamespaces: true
   adminPartitions:

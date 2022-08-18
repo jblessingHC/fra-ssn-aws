@@ -21,7 +21,7 @@ users:
 - name: ${kubeconfig_name}
   user:
     exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
+      apiVersion: client.authentication.k8s.io/v1alpha1
       command: ${aws_authenticator_command}
       args:
 %{~ for i in aws_authenticator_command_args }
