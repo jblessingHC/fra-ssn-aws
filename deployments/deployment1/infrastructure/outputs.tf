@@ -19,7 +19,6 @@ output "unique_deployment_id" {
   value = random_string.rand_suffix.result
 }
 
-
-#output "ecs_dev_hashicups_url" {
-#  value = module.hcp_ecs_dev.client_lb_address
-#}
+output "ecs_dev_hashicups_url" {
+  value = module.hcp_ecs_dev.client_lb_address
+}

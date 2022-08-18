@@ -14,29 +14,28 @@ Before deploying apps/services we must build the infrastructure upon which they 
 NOTE: 20 - 25 mins build time
 
 ```sh
-cd deloyment/deloyment1/infrastructure
+cd deloyments/deloyment1/infrastructure
 terraform init
 terraform plan
 terraform apply
 ```
 
 NOTE: To avoid name clashes, each deployment has a unique deloyment identifier. In this example, that unique ID is `y1g14o`, which you will see in the commands below. YOUR UNIQUE ID WILL BE DIFFERENT!
+Once the `terraform apply` has successfully complete it shares output including, among other things, two `kubeconfig` files, which contain information for executing `kubectl` commands, and two helm charts:
 
-Once the `terraform apply` has successfully complete it shares output including, among other things, two `kubeconfig` files which contain information for executing `kubectl` commands which look something like:
 
 ```sh
-kubeconfig_hcp-consul-y1g14o-eks-dev
-kubeconfig_hcp-consul-y1g14o-eks-prod
+kubeconfig_prod
+kubeconfig_dev
 ```
 
-NOTE: to simplify switchign between envrironments, use shell alias for each environment:
+NOTE: to simplify switching between envrironments, use shell alias for each environment:
 
 ```sh
-export UDID=`terraform output unique_deployment_id` 
-alias kprod="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-prod kubectl"
-alias kdev="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-dev kubectl"
-alias hdev="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-dev helm"
-alias hprod="KUBECONFIG=kubeconfig_hcp-consul-$UDID-eks-prod helm"
+alias kprod="KUBECONFIG=kubeconfig_prod kubectl"
+alias kdev="KUBECONFIG=kubeconfig_dev kubectl"
+alias hprod="KUBECONFIG=kubeconfig_prod helm"
+alias hdev="KUBECONFIG=kubeconfig_dev helm"
 ```
 
 ---
@@ -58,7 +57,7 @@ Installing Consul on the 'EKS Prod' cluster:
 hprod install consul hashicorp/consul --values consul_helm_chart_eks-prod.yaml --version 0.44.0
 ```
 
-NOTE: To troubleshoot, append `--debug --timeout 10m0s`
+NOTE: To troubleshoot, append `--debug`
 
 ### Verify Consul Install
 
@@ -75,7 +74,7 @@ Everything should eventually reach the `Running` STATUS.
 ### Deploy Prod HashiCups
 
 ```sh
-kprod apply -f ../services/k8s-prod-app/manifests/
+kprod apply -f ./services/k8s-prod-app/manifests/
 ```
 
 ### Verify HashiCups Install
@@ -118,11 +117,12 @@ public-api                           ClusterIP      172.20.9.153     <none>     
 
 Pay particular attention to the `consul-eks-prod-ingress-gateway` service, and its `EXTERNAL-IP` and `PORT`
 
-You should now be able to access HashiCups via:
-`a7feccea756b54156a9e4d1dfa08c0db-786022078.us-west-2.elb.amazonaws.com:8080`
+You should now be able to access HashiCups via the EXTERNAL-IP above, e.g.:
+`a7feccea756b54156a9e4d1dfa08c0db-786022078.us-west-2.elb.amazonaws.com`
 
 
-For a close inspection at service configurations you can use the `describe` commandm like so: `kprod describe service consul-eks-prod-ingress-gateway`
+For a close inspection at service configurations you can use the `describe` commandm like so:
+`kprod describe service consul-eks-prod-ingress-gateway`
 
 If there were issues you would see them in the `Events:`.
 
@@ -132,17 +132,15 @@ If there were issues you would see them in the `Events:`.
 
 Lets get the development version of our demonstration app up and running. First:
 
+### Install Consul
+Installing Consul on the 'EKS Dev' cluster:
+
 ```sh
-export KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-dev
-kubectl get nodes
-kubectl get pods
-kubectl get services
+hdev install consul hashicorp/consul --values consul_helm_chart_eks-dev.yaml --version 0.44.0
 ```
 
-### Install Consul
+NOTE: To troubleshoot, append `--debug`
 
-```sh
-helm install consul hashicorp/consul --values consul_helm_chart_eks-dev.yaml --version 0.44.0 --debug --timeout 10m0s
 ```
 
 ### Verify Consul
@@ -150,19 +148,19 @@ helm install consul hashicorp/consul --values consul_helm_chart_eks-dev.yaml --v
 The output of both `get services` and `get pods` should be very similar to the previoud **EKS Prod** deployment, however, with the addition of 'Consul Mesh Gateways', which will be used for communications with the ECS Cluster.
 
 ```sh
-kubectl get pods 
-kubectl get services 
+kdev get pods 
+kdev get services 
 ```
 
 Verify you can remote execute commands within the container:
 
 ```sh
-kubectl exec consul-eks-prod-client-5tkb9 -- uname -a
+kdev exec consul-eks-prod-client-5tkb9 -- uname -a
 ```
 
 Verify that the consul agent is loaded and responding:
 ```sh
-kubectl exec consul-eks-prod-client-5tkb9 -- consul members
+kdev exec consul-eks-prod-client-5tkb9 -- consul members
 ```
 
 ### Install HashiCups
@@ -170,16 +168,16 @@ kubectl exec consul-eks-prod-client-5tkb9 -- consul members
 With comminication tested/established we are now ready to deploy:
 
 ```sh
-kubectl apply -f ../services/k8s-dev-app/manifests/
+kdev apply -f ./services/k8s-dev-app/manifests/
 ```
 
 When its finished, take a look at what's happened with the following commands:
 
 ```sh
-kubectl get pods
-kubectl describe pods consul-eks-dev-client-db7pv
-kubectl get services
-kubectl describe services consul-eks-dev-ingress-gateway
+kdev get pods
+kdev describe pods consul-eks-dev-client-db7pv
+kdev get services
+kdev describe services consul-eks-dev-ingress-gateway
 ```
 NOTE: You should now be able to use the `LoadBalancer Ingress:` address to reach the HashiCups application. 
 
@@ -187,29 +185,13 @@ NOTE: If the `Port` is anything other than `80` you will need to append it to th
 
 If you want to programmatically fetch the Ingress Gateway's external hostname:
 ```sh
-kubectl get services consul-eks-dev-ingress-gateway --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-```
-
-## Communicating with multiple k8s clusters
-
-Siwtching back and forth can be tedious. Try creating a kubectl alias for each cluster, e.g. after creating these two aliases:
-
-```sh
-alias kdev='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-dev kubectl'
-alias kprod='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod kubectl'
-```
-
-I can now use `kprod get services` and `kdev get services` instead.
-
-Same goes for helm:
-```sh
-alias hdev='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-dev helm'
-alias hprod='KUBECONFIG=kubeconfig_hcp-consul-y1g14o-eks-prod helm'
+kdev get services consul-eks-dev-ingress-gateway --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
 ## Uninstalling the deployed service
 
-`kubectl delete -f manifests/`
+`kprod delete -f ./services/k8s-prod-app/manifests/`
+`kdev delete -f ./services/k8s-dev-app/manifests/`
 
 Review the deletion using `kubectl get services` 
 
